@@ -522,11 +522,11 @@ body.light-mode .theme-toggle { border-color: var(--accent); color: var(--accent
   to   { opacity: 1; }
 }
 @keyframes splashFadeOut {
-  from { opacity: 1; transform: scale(2); }
-  to   { opacity: 0; transform: scale(3); }
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(1.45); }
 }
 #splash-screen.hiding {
-  animation: splashFadeOut 3s ease forwards;
+  animation: splashFadeOut 1.45s ease forwards;
   pointer-events: none;
 }
 

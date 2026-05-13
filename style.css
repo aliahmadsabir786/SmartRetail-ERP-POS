@@ -513,8 +513,8 @@ body.light-mode .theme-toggle { border-color: var(--accent); color: var(--accent
   align-items: center; justify-content: center;
   background: #0a0c10;
   background-image:
-    radial-gradient(ellipse 70% 60% at 50% 0%, rgba(59,130,246,0.18) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(139,92,246,0.10) 0%, transparent 60%);
+    radial-gradient(ellipse 70% 60% at 50% 0%, rgba(59,130,246,3) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(139,92,246,3) 0%, transparent 60%);
   animation: splashFadeIn 2.4s ease forwards;
 }
 @keyframes splashFadeIn {
@@ -522,11 +522,11 @@ body.light-mode .theme-toggle { border-color: var(--accent); color: var(--accent
   to   { opacity: 1; }
 }
 @keyframes splashFadeOut {
-  from { opacity: 1; transform: scale(1); }
-  to   { opacity: 0; transform: scale(1.04); }
+  from { opacity: 1; transform: scale(2); }
+  to   { opacity: 0; transform: scale(3); }
 }
 #splash-screen.hiding {
-  animation: splashFadeOut .45s ease forwards;
+  animation: splashFadeOut 3s ease forwards;
   pointer-events: none;
 }
 

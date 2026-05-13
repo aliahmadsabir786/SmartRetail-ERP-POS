@@ -513,8 +513,8 @@ body.light-mode .theme-toggle { border-color: var(--accent); color: var(--accent
   align-items: center; justify-content: center;
   background: #0a0c10;
   background-image:
-    radial-gradient(ellipse 70% 60% at 50% 0%, rgba(59,130,246,3) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(139,92,246,3) 0%, transparent 60%);
+    radial-gradient(ellipse 70% 60% at 50% 0%, rgba(59,130,246,.4) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(139,92,246,.4) 0%, transparent 60%);
   animation: splashFadeIn 2.4s ease forwards;
 }
 @keyframes splashFadeIn {

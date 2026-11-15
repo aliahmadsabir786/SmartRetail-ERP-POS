@@ -14,6 +14,19 @@ const API_BASE_URL = '/api/v1';
 // Set enabled: false to go back to the normal login form.
 // WARNING: this file is public to every visitor, so use a demo / limited account here,
 // never your real admin password.
+// ── NO-LOGIN DEMO MODE ───────────────────────────────────────────
+// true  = login screen kabhi show nahi hogi, app seedha open hogi (demo ke liye).
+// false = normal login screen wapas aa jayegi.
+const NO_LOGIN = true;
+if (NO_LOGIN) {
+  const st = document.createElement('style');
+  st.id = 'no-login-css';
+  st.textContent = '#login-screen{display:none!important}.logout-btn,.hb-logout{display:none!important}';
+  document.head.appendChild(st);
+}
+// Backend se session na mile to app is user ke saath khul jati hai.
+const DEMO_FALLBACK_USER = { id: 0, full_name: 'Demo User', email: 'demo@smartretail.com', role: 'admin' };
+
 const AUTO_LOGIN = {
   enabled: true,
   email: 'demo@smartretail.com',   // <-- change to your user's email

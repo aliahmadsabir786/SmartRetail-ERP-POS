@@ -8,6 +8,18 @@
 // works regardless of host/port, and no CORS handshake is needed at all.
 const API_BASE_URL = '/api/v1';
 
+// ── AUTO LOGIN ───────────────────────────────────────────────────
+// When enabled, the app signs in by itself with the account below — no login screen needed.
+// Put the email + password of an EXISTING backend user here.
+// Set enabled: false to go back to the normal login form.
+// WARNING: this file is public to every visitor, so use a demo / limited account here,
+// never your real admin password.
+const AUTO_LOGIN = {
+  enabled: true,
+  email: 'demo@smartretail.com',   // <-- change to your user's email
+  password: 'Demo@12345',          // <-- change to that user's password
+};
+
 const TokenStore = {
   getAccess() { return localStorage.getItem('sr_access_token'); },
   getRefresh() { return localStorage.getItem('sr_refresh_token'); },
@@ -53,6 +65,10 @@ async function apiRequest(path, { method = 'GET', body = null, isForm = false, a
       return apiRequest(path, { method, body, isForm, auth, _retried: true });
     }
     TokenStore.clear();
+    // Session fully expired — sign in again automatically instead of showing the login screen.
+    if (AUTO_LOGIN.enabled && await ensureLoggedIn()) {
+      return apiRequest(path, { method, body, isForm, auth, _retried: true });
+    }
     window.location.reload();
     return;
   }
@@ -167,6 +183,24 @@ const AuthAPI = {
     return !!TokenStore.getAccess();
   },
 };
+
+/**
+ * Signs in with AUTO_LOGIN if nobody is logged in yet. Resolves true when a session exists.
+ * Await `window.autoLoginReady` (or call this) BEFORE the app checks AuthAPI.isLoggedIn()
+ * so it skips the login screen.
+ */
+async function ensureLoggedIn() {
+  if (AuthAPI.isLoggedIn()) return true;
+  if (!AUTO_LOGIN.enabled) return false;
+  try {
+    await AuthAPI.login(AUTO_LOGIN.email, AUTO_LOGIN.password);
+    return true;
+  } catch (err) {
+    console.warn('Auto login failed:', err.message);
+    return false;
+  }
+}
+window.autoLoginReady = ensureLoggedIn();
 
 // ── USER MANAGEMENT ──────────────────────────────────────────────
 const UsersAPI = {

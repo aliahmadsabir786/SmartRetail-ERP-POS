@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // params instead of a real path). Handle that before anything else, even
   // if the browser also happens to have a valid session stored, since
   // clicking a reset link should always take you to the reset screen.
-  if (_checkPasswordResetLink()) {
+  if (!NO_LOGIN && _checkPasswordResetLink()) {
     loadLoginBranding();
     initLoginCursor();
     if (window.__bootDone) window.__bootDone();
@@ -203,6 +203,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   try {
+    if (NO_LOGIN) {
+      // Demo mode: login screen skip — seedha inner app open.
+      try { if (window.autoLoginReady) await window.autoLoginReady; } catch (_) {}
+      let user = null;
+      try {
+        if (AuthAPI.isLoggedIn()) user = await AuthAPI.profile();
+      } catch (_) {
+        TokenStore.clear();
+      }
+      try {
+        await loginAs(user || DEMO_FALLBACK_USER);
+      } catch (err) {
+        console.warn('Demo app start error:', err);
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app').classList.add('visible');
+      }
+      return;
+    }
     if (typeof AuthAPI !== 'undefined' && AuthAPI.isLoggedIn()) {
       try {
         const user = await AuthAPI.profile();
@@ -859,6 +877,7 @@ async function loginAs(user) {
   ]);
 }
 async function doLogout() {
+  if (NO_LOGIN) return;   // demo mode: sign-out disabled
   const ok = await confirmModal('You will be signed out of SmartRetail ERP.', {
     danger: false, icon: 'fa-sign-out-alt', title: 'Sign Out?', confirmText: 'Sign Out',
   });

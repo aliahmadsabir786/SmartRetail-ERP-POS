@@ -18,6 +18,11 @@ const API_BASE_URL = '/api/v1';
 // true  = login screen kabhi show nahi hogi, app seedha open hogi (demo ke liye).
 // false = normal login screen wapas aa jayegi.
 const NO_LOGIN = true;
+
+// ── DEMO BACKEND (frontend-only) ─────────────────────────────────
+// true  = koi server nahi chahiye: saari /api/v1 requests demo-mock.js browser ke andar handle karti hai.
+// false = asli Django backend use hoga (API_BASE_URL par).
+const USE_DEMO_BACKEND = true;
 if (NO_LOGIN) {
   const st = document.createElement('style');
   st.id = 'no-login-css';
@@ -58,6 +63,9 @@ const TokenStore = {
  * Error with `.status` and `.data` (the parsed error body) on failure.
  */
 async function apiRequest(path, { method = 'GET', body = null, isForm = false, auth = true, _retried = false } = {}) {
+  if (USE_DEMO_BACKEND && typeof DemoBackend !== 'undefined') {
+    return DemoBackend.handle(method, path, body);
+  }
   const headers = {};
   if (!isForm) headers['Content-Type'] = 'application/json';
   if (auth) {
@@ -233,8 +241,8 @@ const ProductsAPI = {
   remove(id) { return apiRequest(`/products/${id}/`, { method: 'DELETE' }); },
   lowStock() { return apiRequest('/products/low_stock/'); },
   bulkCreate(items) { return apiRequest('/products/bulk-create/', { method: 'POST', body: { items } }); },
-  barcodeImageUrl(id) { return `${API_BASE_URL}/products/${id}/barcode-image/`; },
-  qrImageUrl(id) { return `${API_BASE_URL}/products/${id}/qr-image/`; },
+  barcodeImageUrl(id) { return (USE_DEMO_BACKEND && typeof DemoBackend !== 'undefined') ? DemoBackend.barcodeImage(id) : `${API_BASE_URL}/products/${id}/barcode-image/`; },
+  qrImageUrl(id) { return (USE_DEMO_BACKEND && typeof DemoBackend !== 'undefined') ? DemoBackend.qrImage(id) : `${API_BASE_URL}/products/${id}/qr-image/`; },
 };
 
 const CategoriesAPI = {
@@ -375,6 +383,19 @@ const ReportsAPI = {
    * <a>/window.open cannot send custom headers). Requires the backend to also accept
    * ?access_token= as a fallback, OR simplest: fetch as blob and trigger a download client-side. */
   async download(reportName, format, params = {}) {
+    if (USE_DEMO_BACKEND && typeof DemoBackend !== 'undefined') {
+      const data = await DemoBackend.handle('GET', `/reports/${reportName}/${buildQuery(params)}`);
+      const rows = (data && data.results) || [];
+      const cols = rows.length ? Object.keys(rows[0]) : [];
+      const esc = v => '"' + String(v === undefined || v === null ? '' : v).replace(/"/g, '""') + '"';
+      const csv = [cols.map(esc).join(',')].concat(rows.map(r => cols.map(c => esc(r[c])).join(','))).join('\r\n');
+      const url = window.URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = `${reportName}.csv`;
+      document.body.appendChild(a); a.click(); a.remove();
+      window.URL.revokeObjectURL(url);
+      return;
+    }
     const query = buildQuery({ ...params, format });
     const response = await fetch(`${API_BASE_URL}/reports/${reportName}/${query}`, {
       headers: { Authorization: `Bearer ${TokenStore.getAccess()}` },
